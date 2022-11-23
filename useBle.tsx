@@ -64,7 +64,6 @@ export default function useBle():BluetoothLowEnergyApi {
 
     const connectToDevice = async (device:Device) => {
         try {
-            console.log('Conectado a ', device);
             const deviceConnection = await manager.connectToDevice(device.id)
             setConnectedDevice(deviceConnection)
             setIsScanning(false)
