@@ -10,12 +10,17 @@ interface BluetoothLowEnergyApi {
     scanForDevices: () => void;
     allDevices: Device[];
     connectToDevice: (device: Device) => Promise<void>;
+    isScanning: boolean;
+    connectedDevice: Device | null;
+    disconnectDevice: () => void;
+    sendData: (date: string) => void;
 }
 
 
 export default function useBle():BluetoothLowEnergyApi {
     const [allDevices, setAllDevices] = useState<Device[]>([])
     const [connectedDevice, setConnectedDevice] = useState<Device | null>(null) 
+    const [isScanning, setIsScanning] = useState<boolean>(false)
 
     const requestPermission = async (callback:PermissionCallback) => {
         // ...
@@ -38,10 +43,11 @@ export default function useBle():BluetoothLowEnergyApi {
 
 
     const scanForDevices = () => {
-        console.log('scanning for devices')
         manager.startDeviceScan(null, null, (error, device) => {
+            setIsScanning(true)
             if (error) {
                 console.log("Ocorreu um erro durante o scan", error);
+                setIsScanning(false);
                 return;
             }
             if (device) {
@@ -57,10 +63,12 @@ export default function useBle():BluetoothLowEnergyApi {
     }
 
     const connectToDevice = async (device:Device) => {
-        console.log('Conectando a ', device.name);
         try {
+            console.log('Conectado a ', device);
             const deviceConnection = await manager.connectToDevice(device.id)
             setConnectedDevice(deviceConnection)
+            setIsScanning(false)
+            console.log('Conectado a ', device);
             manager.stopDeviceScan()
         }
         catch (error) {
@@ -68,6 +76,44 @@ export default function useBle():BluetoothLowEnergyApi {
         } 
     }
 
-    return { requestPermission, scanForDevices, allDevices, connectToDevice };
+    const disconnectDevice = async () => {
+        try {
+            if (connectedDevice) {
+                await manager.cancelDeviceConnection(connectedDevice.id)
+                setConnectedDevice(null)
+            }
+        }
+        catch (error) {
+            console.log("Ocorreu um erro ao desconectar do dispositivo", error)
+        }
+        finally {
+            setConnectedDevice(null)
+        }
+    }
+    
+    // send data to device arduino module bluetooth hm10
+    const sendData = async (data: string) => {
+        try {
+            if (connectedDevice) {
+                await manager.discoverAllServicesAndCharacteristicsForDevice(connectedDevice.id)
+                await connectedDevice.writeCharacteristicWithResponseForService(
+                    '0000ffe0-0000-1000-8000-00805f9b34fb',
+                    '0000ffe1-0000-1000-8000-00805f9b34fb',
+                    data
+                ).then((characteristic) => {
+                    console.log('Enviado com sucesso', characteristic.value);
+                })
+                .catch((error) => {
+                    console.log('Erro ao enviar', error);
+                })
+            }
+        }
+        catch (error) {
+            console.log("Ocorreu um erro ao enviar dados para o dispositivo", error)
+        }
+    }
+
+
+    return { requestPermission, scanForDevices, allDevices, connectToDevice, isScanning, connectedDevice, disconnectDevice, sendData };
 
 }

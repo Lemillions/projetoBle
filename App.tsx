@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
+import Button from '@ant-design/react-native/lib/button';
 import {
   Pressable,
   SafeAreaView,
   StyleSheet,
   Text,
+  View,
 } from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import useBle from './useBle';
@@ -11,7 +13,8 @@ import useBle from './useBle';
 
 const App = () => {
 
-  const { requestPermission, scanForDevices, allDevices, connectToDevice } = useBle();
+  const { requestPermission, scanForDevices, allDevices, connectToDevice, isScanning, connectedDevice, disconnectDevice, sendData } = useBle();
+  const [isModalVisible, setIsModalVisible] = React.useState(false);
   
   const scannear = () => {
     console.log('scannear');
@@ -21,20 +24,35 @@ const App = () => {
       }
     });
   }
-  useEffect(() => {
-    console.log('allDevices', allDevices);
-  }, [allDevices])
+
 
   return (
     <SafeAreaView style={styles.sectionContainer}>
-      <Pressable style={styles.sectionTitle} onPress={()=>{scannear()}}>
-        <Text>Scanear</Text>
-      </Pressable>
+      <Button onPress={()=>{scannear()}} loading={isScanning} type="primary" >
+        Scanear
+      </Button>
+      <View style={styles.dispositivosEncontrados}>
       {allDevices.map((device: Device) => (
-        <Pressable key={device.id} onPressIn={()=>{connectToDevice(device)}} style={styles.sectionTitle}>
-          <Text key={device.id}>{device.name}</Text>
-        </Pressable>
+        <Button onPress={()=>{connectToDevice(device)}} activeStyle={{ backgroundColor: 'green' }} key={device.id}>
+          {device.name}
+        </Button>
       ))}
+      </View>
+      {
+        connectedDevice && (
+          <View>
+            <Text>Conectado a: {connectedDevice.name}</Text>
+            <Button
+              type="primary"
+              onPress={() => sendData("SA==")}>
+              Enviar Dados
+            </Button>
+            <Button onPress={()=>{disconnectDevice()}} type="warning" >
+              Desconectar
+            </Button>
+          </View>
+        )
+      }
     </SafeAreaView>
   );
 };
@@ -46,19 +64,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     width: '100%',
+    gap: 10,
+    paddingTop: 32,
   },
-  sectionTitle: {
-    padding: 10,
-    backgroundColor: "blue"
+  dispositivosEncontrados: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    gap: 10,
+    marginTop: 20,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+  comandosTela: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: 'black',
+  }
 });
 
 export default App;
