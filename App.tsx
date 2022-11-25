@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import useBle from './useBle';
+import Slider from '@react-native-community/slider';
 
 
 const App = () => {
@@ -31,6 +32,9 @@ const App = () => {
       }
     });
   }
+
+  const [velocidade, setVelocidade] = React.useState(0.5);
+  
 
 
   return (
@@ -79,7 +83,7 @@ const App = () => {
             </Button>
             <Button
               type="warning"
-              onPress={() => sendData("NQ==")}
+              onPress={() => sendData("MA==")}
             >
               &#x02298;
             </Button>
@@ -96,6 +100,35 @@ const App = () => {
             >
               &darr;
             </Button>
+          </View>
+
+          <View style={{width:"100%", padding:20}}>
+            <Slider
+            minimumValue={0.1}
+            maximumValue={0.9}
+            step={0.2} value={velocidade} onValueChange={(value)=>{
+              console.log(value.toFixed(1));
+              setVelocidade(value);
+              switch(value.toFixed(1)) {
+                case "0.1":
+                  sendData("MQ==");
+                  break;
+                case "0.3":
+                  sendData("Mw==");
+                  break;
+                case "0.5":
+                  sendData("NQ==");
+                  break;
+                case "0.7":
+                  sendData("Nw==");
+                  break;
+                case "0.9":
+                  sendData("OQ==");
+                  break;
+              }
+            }
+            }
+            />
           </View>
 
           <View style={{padding:10}}>

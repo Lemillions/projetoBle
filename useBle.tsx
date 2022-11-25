@@ -43,6 +43,7 @@ export default function useBle():BluetoothLowEnergyApi {
 
 
     const scanForDevices = () => {
+        setAllDevices([])
         manager.startDeviceScan(null, null, (error, device) => {
             setIsScanning(true)
             if (error) {
@@ -80,6 +81,7 @@ export default function useBle():BluetoothLowEnergyApi {
             if (connectedDevice) {
                 await manager.cancelDeviceConnection(connectedDevice.id)
                 setConnectedDevice(null)
+                setAllDevices([])
             }
         }
         catch (error) {
