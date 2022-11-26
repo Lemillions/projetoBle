@@ -12,6 +12,7 @@ import useBle from './useBle';
 import Slider from '@react-native-community/slider';
 
 
+
 const App = () => {
 
   const { 
@@ -70,14 +71,16 @@ const App = () => {
           <View style={styles.modalComandos}>
             <Button
               type="primary"
-              onPress={() => sendData("OA==")}
+              onPressIn={() => sendData("OA==")}
+              onPressOut={() => sendData("MA==")}
             >
               &uarr;
             </Button>
             <View style={styles.modalLinha}>
             <Button
               type="primary"
-              onPress={() => sendData("NA==")}
+              onPressIn={() => sendData("NA==")}
+              onPressOut={() => sendData("MA==")}
             >
               &larr;
             </Button>
@@ -89,14 +92,16 @@ const App = () => {
             </Button>
             <Button
               type="primary"
-              onPress={() => sendData("Ng==")}
+              onPressIn={() => sendData("Ng==")}
+              onPressOut={() => sendData("MA==")}
             >
               &rarr;
             </Button>
             </View>
             <Button
               type="primary"
-              onPress={() => sendData("Mg==")}
+              onPressIn={() => sendData("Mg==")}
+              onPressOut={() => sendData("MA==")}
             >
               &darr;
             </Button>
