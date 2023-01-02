@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import Button from '@ant-design/react-native/lib/button';
 import {
   Modal,
   SafeAreaView,
   StyleSheet,
   Text,
   View,
+  Image,
+  Pressable
 } from 'react-native';
 import { Device } from 'react-native-ble-plx';
 import useBle from './useBle';
@@ -15,17 +16,17 @@ import Slider from '@react-native-community/slider';
 
 const App = () => {
 
-  const { 
+  const {
     requestPermission,
-    scanForDevices, 
-    allDevices, 
+    scanForDevices,
+    allDevices,
     connectToDevice,
-    isScanning, 
-    connectedDevice, 
-    disconnectDevice, 
-    sendData 
+    isScanning,
+    connectedDevice,
+    disconnectDevice,
+    sendData
   } = useBle();
-  
+
   const scannear = () => {
     requestPermission((result: boolean) => {
       if (result) {
@@ -35,22 +36,29 @@ const App = () => {
   }
 
   const [velocidade, setVelocidade] = React.useState(0.5);
-  
+  const [pisca, setPisca] = React.useState(false);
+
+  const ligarFarois = () => {
+    pisca?sendData("Tw=="):sendData("UA==");
+    setPisca(!pisca);
+  }
 
 
   return (
     <SafeAreaView style={styles.sectionContainer}>
-      <Button onPress={()=>{scannear()}} loading={isScanning} type="primary" >
-        Scanear
-      </Button>
+      <Pressable onPress={() => { scannear() }} disabled={isScanning} style={styles.botaoPadrao}>
+        <Text style={{ color: "white", fontWeight: "600", fontSize: 20 }}>
+          Scanear
+        </Text>
+      </Pressable>
       <View style={styles.dispositivosEncontrados}>
-      {allDevices.map((device: Device) => (
-        <Button onPress={()=>{connectToDevice(device)}} style={{ backgroundColor: '#059e1f', marginBottom: 10 }} key={device.id}>
-          <Text style={{ color:"white", fontWeight:"800"}}>
-            {device.name? device.name : device.id}
-          </Text>
-        </Button>
-      ))}
+        {allDevices.map((device: Device) => (
+          <Pressable onPress={() => { connectToDevice(device) }} style={{ backgroundColor: '#059e1f', marginBottom: 10, padding:10, borderRadius:5 }} key={device.id}>
+            <Text style={{ color: "white", fontWeight: "800" }}>
+              {device.name ? device.name : device.id}
+            </Text>
+          </Pressable>
+        ))}
       </View>
 
       <Modal
@@ -63,85 +71,118 @@ const App = () => {
       >
         <View style={styles.modalView}>
           <View>
-            <Text style={{fontWeight: "800", fontSize: 16, color: "green"}} >
-              Conectado a {connectedDevice?.name? connectedDevice.name : connectedDevice?.id}
+            <Text style={{ fontWeight: "800", fontSize: 16, color: "green" }} >
+              Conectado a {connectedDevice?.name ? connectedDevice.name : connectedDevice?.id}
             </Text>
           </View>
-          
+          <View style={styles.linhaPiscaBuzina}>
+              <Pressable
+                onPressIn={() => sendData("Qg==")}
+                onPressOut={() => sendData("Tg==")}
+                style={{ backgroundColor: "yellow", borderRadius: 50, width: 50, height: 50, display: "flex", justifyContent: "center", alignItems: "center" }}
+              >
+                <Image
+                  source={require('./buzina.png')}
+                  style={{ width: 40, height: 40 }}
+                />
+              </Pressable>
+
+              <Pressable
+                onPressIn={() => {ligarFarois()}}
+                style={pisca?{ backgroundColor: "red", borderRadius: 50, width: 50, height: 50, display: "flex", alignItems: "center" }:{ backgroundColor: "#DC143C", borderRadius: 50, width: 50, height: 50, display: "flex", alignItems: "center" }}
+              >
+                <Image
+                  source={require('./hazard-light.png')}
+                  style={{ width: 45, height: 45 }}
+                />
+              </Pressable>
+            </View>
           <View style={styles.modalComandos}>
-            <Button
-              type="primary"
+            <Pressable
+              style={styles.botaoComando}
               onPressIn={() => sendData("OA==")}
               onPressOut={() => sendData("MA==")}
             >
+              <Text style={{fontSize:26, fontWeight:"800", width:40, height:40, textAlign: 'center'}}>
               &uarr;
-            </Button>
+              </Text>
+            </Pressable>
             <View style={styles.modalLinha}>
-            <Button
-              type="primary"
-              onPressIn={() => sendData("NA==")}
-              onPressOut={() => sendData("MA==")}
-            >
-              &larr;
-            </Button>
-            <Button
-              type="warning"
-              onPress={() => sendData("MA==")}
-            >
-              &#x02298;
-            </Button>
-            <Button
-              type="primary"
-              onPressIn={() => sendData("Ng==")}
-              onPressOut={() => sendData("MA==")}
-            >
-              &rarr;
-            </Button>
+              <Pressable
+                style={styles.botaoComando}
+                onPressIn={() => sendData("NA==")}
+                onPressOut={() => sendData("MA==")}
+              >
+                <Text style={{fontSize:26, fontWeight:"800", width:40, height:40, textAlign: 'center', marginBottom:2}}>
+                &larr;
+                </Text>
+              </Pressable>
+              <Pressable
+                style={{ backgroundColor: "red", borderRadius: 50, width: 50, height: 50, display: "flex", justifyContent: "center", alignItems: "center" }}
+                onPress={() => sendData("MA==")}
+              >
+                <Text style={{fontSize:36, fontWeight:'700', color:"black"}}>
+                &#x02298;
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.botaoComando}
+                onPressIn={() => sendData("Ng==")}
+                onPressOut={() => sendData("MA==")}
+              >
+                <Text style={{fontSize:26, fontWeight:"800", width:40, height:40, textAlign: 'center', marginBottom:2}}>
+                &rarr;
+                </Text>
+              </Pressable>
             </View>
-            <Button
-              type="primary"
+            <Pressable
+              style={styles.botaoComando}
               onPressIn={() => sendData("Mg==")}
               onPressOut={() => sendData("MA==")}
             >
+              <Text style={{fontSize:26, fontWeight:"800", width:40, height:40, textAlign: 'center'}}>
               &darr;
-            </Button>
+              </Text>
+            </Pressable>
           </View>
 
-          <View style={{width:"100%", padding:20}}>
+          <View style={{ width: "100%", padding: 20 }}>
             <Slider
-            minimumValue={0.1}
-            maximumValue={0.9}
-            step={0.2} value={velocidade} onValueChange={(value)=>{
-              console.log(value.toFixed(1));
-              setVelocidade(value);
-              switch(value.toFixed(1)) {
-                case "0.1":
-                  sendData("MQ==");
-                  break;
-                case "0.3":
-                  sendData("Mw==");
-                  break;
-                case "0.5":
-                  sendData("NQ==");
-                  break;
-                case "0.7":
-                  sendData("Nw==");
-                  break;
-                case "0.9":
-                  sendData("OQ==");
-                  break;
+              minimumValue={0.1}
+              maximumValue={0.9}
+              step={0.2} value={velocidade} onValueChange={(value) => {
+                console.log(value.toFixed(1));
+                setVelocidade(value);
+                switch (value.toFixed(1)) {
+                  case "0.1":
+                    sendData("MQ==");
+                    break;
+                  case "0.3":
+                    sendData("Mw==");
+                    break;
+                  case "0.5":
+                    sendData("NQ==");
+                    break;
+                  case "0.7":
+                    sendData("Nw==");
+                    break;
+                  case "0.9":
+                    sendData("OQ==");
+                    break;
+                }
               }
-            }
-            }
+              }
             />
           </View>
 
-          <View style={{padding:10}}>
-            <Button onPress={()=>{disconnectDevice()}} type="warning" size='large' >
-              Desconectar
-            </Button>
+          <View style={{ padding: 10 }}>
+            <Pressable onPress={() => { disconnectDevice() }} style={{ backgroundColor: "red", borderRadius:10, padding:14 }}>
+              <Text style={{ color: "white", fontWeight: "800", fontSize: 16 }}>
+                Desconectar
+              </Text>
+            </Pressable>
           </View>
-          
+
         </View>
       </Modal>
     </SafeAreaView>
@@ -157,6 +198,16 @@ const styles = StyleSheet.create({
     width: '100%',
     gap: 10,
     paddingTop: 32,
+  },
+  botaoPadrao: {
+    backgroundColor: '#18a0fb',
+    padding: 12,
+    borderRadius: 10,
+  },
+  botaoComando: {
+    backgroundColor: "#18a0fb",
+    borderRadius: 25,
+    padding: 5,
   },
   dispositivosEncontrados: {
     display: 'flex',
@@ -193,6 +244,13 @@ const styles = StyleSheet.create({
     gap: 10,
     marginTop: 20,
     height: '50%',
+  },
+  linhaPiscaBuzina: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    width: '100%',
   },
   modalLinha: {
     display: 'flex',
